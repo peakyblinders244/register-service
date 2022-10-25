@@ -1,0 +1,10 @@
+spring:
+  data:
+    mongodb:
+      uri: mongodb+srv://lhquan:25251325Quan@cluster0.xsm2o.mongodb.net/?retryWrites=true&w=majority
+      database: register-server
+
+server:
+  port: 8282
+  servlet:
+    context-path: /register-service
