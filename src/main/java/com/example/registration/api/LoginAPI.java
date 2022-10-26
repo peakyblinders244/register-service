@@ -31,7 +31,8 @@ import java.util.Map;
 public class LoginAPI {
     private final MongoTemplate mongoTemplate;
     private final IUserRepository userRepository;
-    private  final PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
+
     public LoginAPI(MongoTemplate mongoTemplate, IUserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.mongoTemplate = mongoTemplate;
         this.userRepository = userRepository;
@@ -44,6 +45,9 @@ public class LoginAPI {
 
         String token = JwtTokenProvider.generateToken(login.getUsername());
         User user = userRepository.findByUsername(login.getUsername());
+        if (user == null) {
+            throw new RegisterServiceException("User not found");
+        }
         if (!passwordEncoder.matches(login.getPassword(), user.getPassword())) {
             throw new RegisterServiceException("Mật khẩu không đúng! Vui lòng kiểm tra lại!");
         }
