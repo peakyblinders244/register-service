@@ -1,6 +1,7 @@
 package com.example.registration.api;
 
 import com.example.registration.entities.User;
+import com.example.registration.handler.RegisterServiceException;
 import com.example.registration.jwt.JwtTokenProvider;
 import com.example.registration.model.LoginDTO;
 import com.example.registration.repositories.IUserRepository;
@@ -8,8 +9,8 @@ import com.example.registration.utils.Constants;
 import com.example.registration.utils.Extensions;
 import com.example.registration.wrapper.ObjectResponseWrapper;
 import lombok.experimental.ExtensionMethod;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -30,10 +31,11 @@ import java.util.Map;
 public class LoginAPI {
     private final MongoTemplate mongoTemplate;
     private final IUserRepository userRepository;
-
-    public LoginAPI(MongoTemplate mongoTemplate, IUserRepository userRepository) {
+    private  final PasswordEncoder passwordEncoder;
+    public LoginAPI(MongoTemplate mongoTemplate, IUserRepository userRepository, PasswordEncoder passwordEncoder) {
         this.mongoTemplate = mongoTemplate;
         this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     @PermitAll
@@ -42,6 +44,9 @@ public class LoginAPI {
 
         String token = JwtTokenProvider.generateToken(login.getUsername());
         User user = userRepository.findByUsername(login.getUsername());
+        if (!passwordEncoder.matches(login.getPassword(), user.getPassword())) {
+            throw new RegisterServiceException("Mật khẩu không đúng! Vui lòng kiểm tra lại!");
+        }
         Map<String, Object> map = new HashMap<>();
         map.put("id", user.getId());
         map.put("username", user.getUsername());
